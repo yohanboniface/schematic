@@ -250,11 +250,18 @@ def update(schema_dir, version):
     settings = get_settings(schema_dir)
     table_check(settings.db, settings.table)
     say(settings.db, UPDATE % (settings.table, version))
+    print 'Updated db to version %s' % version
 
 
 def version(schema_dir):
     settings = get_settings(schema_dir)
     print get_version(settings.db, settings.table)
+
+
+def latest(schema_dir):
+    ids = find_upgrades(schema_dir).keys()
+    ids.sort()
+    print ids[-1] if ids else 0
 
 
 if __name__ == '__main__':
@@ -274,6 +281,10 @@ if __name__ == '__main__':
                       action='store', type='int',
                       help='Stop running migrations after the specified '
                            'revision.')
+    parser.add_option('-l', '--latest', dest='latest', default=False,
+                      action='store_true',
+                      help='Print the lastest schema id available (without '
+                           'running any migrations)')
     options, args = parser.parse_args()
 
     if len(args) != 1:
@@ -288,6 +299,8 @@ if __name__ == '__main__':
             update(path, options.update)
         elif options.version:
             version(path)
+        elif options.latest:
+            latest(path)
         else:
             main(path, options.max)
     except SchematicError, e:
